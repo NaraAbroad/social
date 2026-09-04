@@ -123,7 +123,7 @@ L, R = tilt(L), tilt(R)
 mx = max(np.abs(L).max(), np.abs(R).max()); L, R = L/mx*0.75, R/mx*0.75
 
 # ================= voice-over =================
-VO = [('l1', 0.40), ('l2', 3.97), ('l3', 10.55), ('l4', 12.95), ('l5', 22.95)]
+VO = [('l1', 0.45), ('l2', 3.95), ('l3', 10.60), ('l4', 13.00), ('l5', 23.00)]
 voice = np.zeros(N)
 for lid, start in VO:
     w = wave.open(f'vot-{lid}.wav')
