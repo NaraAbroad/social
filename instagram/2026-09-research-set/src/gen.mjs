@@ -16,6 +16,13 @@ const THEMES = {
     line:'rgba(10,26,51,.16)', chipBg:'rgba(228,87,76,.12)', chipBd:'rgba(228,87,76,.30)',
     panel:'rgba(10,26,51,.04)', panelBd:'rgba(10,26,51,.10)',
     grain:'rgba(10,26,51,.07)', onAccent:'#fff' },
+  paper:{ bg:`radial-gradient(900px 620px at 88% 4%, #F3E9D6 0%, transparent 60%),
+              radial-gradient(760px 560px at 4% 100%, #EDE4D2 0%, transparent 58%),
+              linear-gradient(170deg,#FAF4E8 0%,#F2E9D8 100%)`,
+    fg:'#26262A', accent:'#2A5570', muted:'#6E6A5F', soft:'#3A3A36',
+    line:'rgba(38,38,42,.18)', chipBg:'rgba(42,85,112,.10)', chipBd:'rgba(42,85,112,.30)',
+    panel:'rgba(38,38,42,.04)', panelBd:'rgba(38,38,42,.10)',
+    grain:'rgba(38,38,42,.10)', onAccent:'#FAF4E8' },
   deep:{ bg:`radial-gradient(1000px 640px at 10% -8%, #164A47 0%, transparent 60%),
              radial-gradient(880px 620px at 96% 104%, #123B62 0%, transparent 58%),
              linear-gradient(168deg,#08202E 0%,#0A1A33 100%)`,
@@ -112,7 +119,8 @@ ${denseCSS}
 const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
   args:['--no-sandbox','--font-render-hinting=none'] });
 const pg = await b.newPage({ viewport:{width:1080,height:1350}, deviceScaleFactor:1 });
-for (const p of posts) {
+const only = process.argv.slice(2);
+for (const p of posts.filter(p => !only.length || only.includes(p.id))) {
   writeFileSync(`gen-${p.id}.html`, render(p));
   await pg.goto(`file://${process.cwd()}/gen-${p.id}.html`);
   await pg.waitForTimeout(450);
