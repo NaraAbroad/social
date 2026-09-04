@@ -1,1 +1,4 @@
 node_modules/
+.gemini_key
+*.wav
+frames/

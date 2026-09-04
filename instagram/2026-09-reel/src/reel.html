@@ -47,20 +47,20 @@ body{font-family:Cairo,sans-serif;-webkit-font-smoothing:antialiased}
   <div id="layer"></div>
 </div>
 <script>
-const DUR = 15;
+const DUR = 27;
 const B = [
- // t0, t1, y-offset, html
- [0.15, 3.10, `<div class="big">بدك تدرس<br><em>برّا؟</em></div>`],
- [1.35, 3.10, `<div class="sub">وما بتعرف من وين تبلّش…</div>`, 330],
- [3.30, 6.60, `<div class="mid">التقديم لحاله<br><em>متاهة.</em></div>`, -430],
- [4.05, 6.60, `<div class="row"><div class="x">✕</div><div class="rt">كل جامعة نظام مختلف</div></div>`, -60],
- [4.75, 6.60, `<div class="row"><div class="x">✕</div><div class="rt">مواعيد بتفوتك</div></div>`, 110],
- [5.45, 6.60, `<div class="row"><div class="x">✕</div><div class="rt">أوراق بترجع مرفوضة</div></div>`, 280],
- [6.85, 8.35, `<div class="big mint" style="text-align:center">في طريقة<br><em>أسهل.</em></div>`],
- [8.60, 12.30, `<div class="row"><div class="n">١</div><div class="rt">ملف طالب واحد<br>بتبنيه مرة وحدة</div></div>`, -380],
- [9.75, 12.30, `<div class="row"><div class="n">٢</div><div class="rt">ترشيح حسب درجاتك<br>وأهدافك</div></div>`, -90],
- [10.90, 12.30, `<div class="row"><div class="n">٣</div><div class="rt">تقدّم لـ ٣ برامج<br>من نفس الشاشة</div></div>`, 200],
- [12.55, 15.0, `<div id="cta">ابدأ اليوم.</div><div id="ctas">nara-abroad.co.uk</div>`],
+ // t0, t1, html, y-offset   — timings follow the voice-over
+ [0.30, 3.85, `<div class="big">بدك تدرس<br><em>برّا؟</em></div>`],
+ [1.60, 3.85, `<div class="sub">وما بتعرف من وين تبلّش…</div>`, 330],
+ [4.00, 10.20, `<div class="mid">التقديم لحاله<br><em>متاهة.</em></div>`, -430],
+ [5.55, 10.20, `<div class="row"><div class="x">✕</div><div class="rt">كل جامعة نظام مختلف</div></div>`, -60],
+ [6.95, 10.20, `<div class="row"><div class="x">✕</div><div class="rt">مواعيد بتفوتك</div></div>`, 110],
+ [8.35, 10.20, `<div class="row"><div class="x">✕</div><div class="rt">أوراق بترجع مرفوضة</div></div>`, 280],
+ [10.45, 12.75, `<div class="big mint" style="text-align:center">في طريقة<br><em>أسهل.</em></div>`],
+ [12.95, 22.60, `<div class="row"><div class="n">١</div><div class="rt">ملف طالب واحد<br>بتبنيه مرة وحدة</div></div>`, -380],
+ [16.10, 22.60, `<div class="row"><div class="n">٢</div><div class="rt">ترشيح حسب درجاتك<br>وأهدافك</div></div>`, -90],
+ [19.30, 22.60, `<div class="row"><div class="n">٣</div><div class="rt">تقدّم لـ ٣ برامج<br>من نفس الشاشة</div></div>`, 200],
+ [22.90, 27.0, `<div id="cta">ابدأ اليوم.</div><div id="ctas">nara-abroad.co.uk</div>`],
 ];
 const layer = document.getElementById('layer');
 const els = B.map(b => {
@@ -78,7 +78,7 @@ const clamp = v => Math.max(0, Math.min(1, v));
 
 window.render = function (t) {
   document.getElementById('bar').style.width = (t / DUR * 1080) + 'px';
-  document.getElementById('ring').style.transform = `rotate(${t * 9}deg)`;
+  document.getElementById('ring').style.transform = `rotate(${t * 5}deg)`;
   document.getElementById('g1').style.transform = `translate(${Math.sin(t*.7)*40}px,${Math.cos(t*.5)*30}px)`;
   document.getElementById('g2').style.transform = `translate(${Math.cos(t*.6)*45}px,${Math.sin(t*.8)*35}px)`;
   B.forEach((b, i) => {
