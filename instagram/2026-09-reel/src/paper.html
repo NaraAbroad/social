@@ -68,7 +68,7 @@ body{font-family:Cairo,sans-serif;-webkit-font-smoothing:antialiased}
 </div>
 
 <script>
-const DUR = 26, W = 1080, H = 1920;
+const DUR = 31, W = 1080, H = 1920;
 const layer = document.getElementById('layer');
 
 /* deterministic pseudo-random so every render is identical */
@@ -128,7 +128,7 @@ function beat(o) { B.push(o); return o; }
 
 const claim = mkScrap({ w: 820, h: 330, tone: '#FFFDF6', rot: -2.4, filt: 'torn',
   html: `<div class="t-big">دراستك برّا؟<br><em>فوضى ورق.</em></div>` });
-beat({ el: claim, t0: 1.30, t1: 9.30, x: 130, y: 690, rot: -2.4, from: 'slam' });
+beat({ el: claim, t0: 1.30, t1: 9.70, x: 130, y: 690, rot: -2.4, from: 'slam' });
 
 const PROBS = [
   ['١٢ موقع جامعة… كل واحد بطلب مختلف', 470, 1090, 3.2, '#F6EEDC'],
@@ -139,12 +139,12 @@ const PROBS = [
 PROBS.forEach((p, i) => {
   const el = mkScrap({ w: 470, h: 150, tone: p[4], rot: p[3], filt: 'torn2',
     html: `<div class="t-mid">${p[0]}</div>` });
-  beat({ el, t0: 4.30 + i * 1.15, t1: 9.30, x: p[1], y: p[2], rot: p[3], from: 'flip' });
+  beat({ el, t0: 4.30 + i * 1.15, t1: 9.70, x: p[1], y: p[2], rot: p[3], from: 'flip' });
 });
 
 const turn = mkScrap({ w: 760, h: 300, tone: '#FFFDF6', rot: 1.4, filt: 'torn',
   html: `<div class="t-big">بس شو لو<br><em style="color:#2F6B4F">كلهم ورقة وحدة؟</em></div>` });
-beat({ el: turn, t0: 10.10, t1: 12.30, x: 160, y: 760, rot: 1.4, from: 'slam' });
+beat({ el: turn, t0: 10.10, t1: 13.50, x: 160, y: 760, rot: 1.4, from: 'slam' });
 
 /* content that lands on the clean sheet */
 const sheetTitle = document.createElement('div');
@@ -152,7 +152,7 @@ sheetTitle.className = 'scrap';
 sheetTitle.style.cssText = 'width:700px;height:230px';
 sheetTitle.innerHTML = `<div class="face"><div class="t-title">ملف واحد.<br><em>وكل شي جواه.</em></div></div>`;
 layer.appendChild(sheetTitle);
-beat({ el: sheetTitle, t0: 13.30, t1: 24.20, x: 190, y: 630, rot: 0, from: 'rise' });
+beat({ el: sheetTitle, t0: 13.70, t1: 28.90, x: 190, y: 630, rot: 0, from: 'rise' });
 
 const ROWS = [
   '<b>٥٠,٠٠٠</b> برنامج · <b>٦٠٠</b> جامعة · <b>٣٥</b> دولة',
@@ -167,7 +167,7 @@ ROWS.forEach((r, i) => {
   el.style.cssText = 'width:700px;height:104px';
   el.innerHTML = `<div class="face" style="justify-content:center"><div class="t-row">${r}</div></div>`;
   layer.appendChild(el);
-  beat({ el, t0: 14.60 + i * 1.30, t1: 24.20, x: 190, y: 880 + i * 110, rot: 0, from: 'rise' });
+  beat({ el, t0: 15.00 + i * 1.90, t1: 28.90, x: 190, y: 880 + i * 110, rot: 0, from: 'rise' });
 });
 
 const stamp = document.createElement('div');
@@ -175,11 +175,11 @@ stamp.className = 'scrap';
 stamp.style.cssText = 'width:360px;height:150px';
 stamp.innerHTML = `<div class="face"><div class="stamp">مقبول</div></div>`;
 layer.appendChild(stamp);
-beat({ el: stamp, t0: 21.10, t1: 24.20, x: 560, y: 1430, rot: -13, from: 'stamp' });
+beat({ el: stamp, t0: 24.60, t1: 28.90, x: 560, y: 1430, rot: -13, from: 'stamp' });
 
 const cta = mkScrap({ w: 820, h: 340, tone: '#FEFBF2', rot: -1.2, filt: 'torn',
   html: `<div><div class="t-cta">نارا أبرود.</div><div class="t-sub">nara-abroad.co.uk</div></div>` });
-beat({ el: cta, t0: 24.35, t1: 26.0, x: 130, y: 780, rot: -1.2, from: 'slam' });
+beat({ el: cta, t0: 29.05, t1: 31.0, x: 130, y: 780, rot: -1.2, from: 'slam' });
 
 /* ---------- helpers ---------- */
 const cl = v => Math.max(0, Math.min(1, v));
@@ -217,7 +217,7 @@ window.render = function (t) {
   if (sp <= 0) { sheet.style.opacity = 0; }
   else {
     const e = backOut(sp);
-    const gone = cl((t - 24.20) / 0.5);
+    const gone = cl((t - 28.90) / 0.5);
     sheet.style.opacity = sp * (1 - gone);
     sheet.style.transform =
       `translate(90px, ${560 + (1 - e) * 240 - gone * 60}px) ` +

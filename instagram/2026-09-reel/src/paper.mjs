@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import { mkdirSync, rmSync } from 'fs';
-const FPS = 30, DUR = 26, N = FPS * DUR;
+const FPS = 30, DUR = 31, N = FPS * DUR;
 rmSync('frames-paper', { recursive: true, force: true }); mkdirSync('frames-paper');
 const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
   args:['--no-sandbox','--font-render-hinting=none'] });
