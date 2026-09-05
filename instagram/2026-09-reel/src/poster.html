@@ -1,0 +1,286 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-400.ttf);font-weight:400}
+@font-face{font-family:Cairo;src:url(fonts/cairo-700.ttf);font-weight:700}
+@font-face{font-family:Cairo;src:url(fonts/cairo-900.ttf);font-weight:900}
+@font-face{font-family:Tajawal;src:url(fonts/tajawal-700.ttf);font-weight:700}
+@font-face{font-family:Tajawal;src:url(fonts/tajawal-900.ttf);font-weight:900}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#EFDFC6}
+body{font-family:Cairo,sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden}
+.lyr{position:absolute;left:0;top:0;width:1080px;height:1920px;will-change:transform,opacity}
+.lyr svg{display:block}
+
+/* film grain + paper tooth over everything */
+#grain{position:absolute;inset:0;z-index:30;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:
+    repeating-linear-gradient(94deg, rgba(120,96,64,.05) 0 1px, transparent 1px 3px),
+    radial-gradient(circle at 1px 1px, rgba(105,84,54,.13) 1px, transparent 0);
+  background-size:auto,3px 3px}
+#vig{position:absolute;inset:0;z-index:29;pointer-events:none;
+  background:radial-gradient(120% 78% at 50% 42%, transparent 40%, rgba(60,42,24,.24) 100%)}
+
+#mark{position:absolute;top:72px;right:70px;display:flex;align-items:center;gap:15px;
+  color:#2A3A38;font-weight:700;font-size:28px;letter-spacing:.30em;z-index:40}
+#mark i{width:16px;height:16px;border-radius:50%;background:#C0603F;display:block}
+#bar{position:absolute;top:0;right:0;height:7px;background:#C0603F;z-index:41}
+#site{position:absolute;bottom:66px;right:0;left:0;text-align:center;color:#5E5040;
+  font-size:31px;font-weight:700;direction:ltr;z-index:40;opacity:.75}
+
+/* type sits in the lower third, over a soft scrim */
+#scrim{position:absolute;left:0;right:0;bottom:0;height:760px;z-index:20;
+  background:linear-gradient(180deg, transparent 0%, rgba(240,226,203,.62) 42%, rgba(238,222,197,.92) 100%)}
+.beat{position:absolute;left:0;top:0;z-index:25;text-align:center;will-change:transform,opacity}
+.hero{font-family:Tajawal,Cairo,sans-serif;font-weight:900;font-size:104px;line-height:1.24;
+  color:#23393B;letter-spacing:-.015em}
+.hero em{font-style:normal;color:#C0603F}
+.kick{font-family:Tajawal,Cairo,sans-serif;font-weight:900;font-size:80px;line-height:1.3;color:#23393B}
+.kick em{font-style:normal;color:#B0662C}
+.stats{display:flex;justify-content:center;gap:0}
+.stat{flex:1}
+.stat .n{font-family:Tajawal,sans-serif;font-weight:900;font-size:74px;color:#C0603F;line-height:1}
+.stat .l{font-size:27px;font-weight:700;color:#4A5A52;margin-top:10px}
+.stat + .stat{border-right:1px solid rgba(35,57,59,.22)}
+.line{font-size:41px;font-weight:700;line-height:1.5;color:#2E4040}
+.line b{color:#23393B;font-weight:900}
+.cta{font-family:Tajawal,Cairo,sans-serif;font-weight:900;font-size:112px;color:#23393B;line-height:1.24}
+.cta span{display:block;font-family:Cairo;font-size:36px;font-weight:700;color:#5E5040;
+  margin-top:18px;direction:ltr;letter-spacing:.02em}
+</style></head><body>
+<div id="stage">
+  <div class="lyr" id="l-sky"></div>
+  <div class="lyr" id="l-sun"></div>
+  <div class="lyr" id="l-far"></div>
+  <div class="lyr" id="l-arch"></div>
+  <div class="lyr" id="l-city"></div>
+  <div class="lyr" id="l-road"></div>
+  <div class="lyr" id="l-float"></div>
+  <div class="lyr" id="l-plants" style="z-index:22"></div>
+  <div id="scrim"></div>
+  <div id="vig"></div>
+  <div id="grain"></div>
+  <div id="mark"><i></i>NARA ABROAD</div>
+  <div id="bar"></div>
+  <div id="site">nara-abroad.co.uk</div>
+  <div id="layer"></div>
+</div>
+
+<script>
+const DUR = 27, W = 1080, H = 1920;
+const $ = id => document.getElementById(id);
+const cl = v => Math.max(0, Math.min(1, v));
+const outCubic = p => 1 - Math.pow(1 - p, 3);
+const backOut = p => { const c = 1.6, q = p - 1; return 1 + (c + 1) * q * q * q + c * q * q; };
+
+/* --------------------------------------------------------------- palette
+   muted, editorial: clay, ochre, sage, ink teal, sand, cream            */
+const C = {
+  skyTop:'#E3C9A6', skyMid:'#EDD9BA', skyLow:'#F3E6CE',
+  sun:'#D9954B', sunSoft:'#E4B075',
+  far:'#B6BCA4', far2:'#98A691',
+  arch:'#C0603F', archDark:'#9C4830', archLite:'#D4795A',
+  b1:'#E7CFA9', b2:'#CFAC80', b3:'#B48C63',
+  deep:'#23393B', deep2:'#35514E',
+  road:'#F7F0E1', roadEdge:'#DCC7A4',
+  plant:'#22403C', plant2:'#2F5750',
+  ink:'#23393B',
+};
+
+const S = (h, inner) => `<svg width="1080" height="${h}" viewBox="0 0 1080 ${h}">${inner}</svg>`;
+
+/* sky: three soft bands, no hard edges */
+$('l-sky').innerHTML = S(1920, `
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="${C.skyTop}"/>
+      <stop offset="46%" stop-color="${C.skyMid}"/>
+      <stop offset="100%" stop-color="${C.skyLow}"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="38%" r="42%">
+      <stop offset="0%" stop-color="${C.sunSoft}" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="${C.sunSoft}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#sky)"/>
+  <rect width="1080" height="1920" fill="url(#glow)"/>`);
+
+/* the sun: one big confident disc, the light source of the whole poster */
+$('l-sun').innerHTML = S(1920, `
+  <circle cx="540" cy="742" r="262" fill="${C.sun}" opacity=".92"/>
+  <circle cx="540" cy="742" r="262" fill="none" stroke="#F0D0A2" stroke-width="3" opacity=".5"/>`);
+
+/* far dunes: two calm silhouettes for depth */
+$('l-far').innerHTML = S(1920, `
+  <path d="M0 1090 C 190 1000, 330 1070, 470 1058 C 640 1044, 760 966, 900 1000
+           C 990 1022, 1040 1050, 1080 1044 L1080 1920 L0 1920 Z" fill="${C.far}" opacity=".9"/>
+  <path d="M0 1178 C 160 1132, 300 1180, 460 1166 C 640 1150, 780 1096, 940 1128
+           C 1010 1142, 1050 1160, 1080 1156 L1080 1920 L0 1920 Z" fill="${C.far2}" opacity=".95"/>`);
+
+/* THE focal point: a monumental arch the sun sits inside */
+$('l-arch').innerHTML = S(1920, `
+  <g>
+    <path d="M318 1192 L318 792 A222 222 0 0 1 762 792 L762 1192 L690 1192 L690 792
+             A150 150 0 0 0 390 792 L390 1192 Z" fill="${C.arch}"/>
+    <path d="M318 1192 L318 792 A222 222 0 0 1 432 596 L478 668 A150 150 0 0 0 390 792
+             L390 1192 Z" fill="${C.archLite}" opacity=".55"/>
+    <rect x="292" y="1160" width="124" height="40" rx="6" fill="${C.archDark}"/>
+    <rect x="664" y="1160" width="124" height="40" rx="6" fill="${C.archDark}"/>
+  </g>`);
+
+/* sculptural city: cylinders, half-domes, tall slabs - few and large */
+$('l-city').innerHTML = S(1920, `
+  <g>
+    <rect x="86" y="900" width="118" height="292" rx="59" fill="${C.b2}"/>
+    <rect x="86" y="900" width="59" height="292" rx="59" fill="${C.b1}" opacity=".65"/>
+    <path d="M228 1192 L228 1010 A62 62 0 0 1 352 1010 L352 1192 Z" fill="${C.b3}"/>
+    <rect x="836" y="866" width="150" height="326" fill="${C.b2}"/>
+    <rect x="836" y="866" width="72" height="326" fill="${C.b1}" opacity=".6"/>
+    <path d="M836 866 h150 v-46 a75 30 0 0 0 -150 0 z" fill="${C.b3}"/>
+    <circle cx="762" cy="1108" r="86" fill="${C.b1}"/>
+    <rect x="676" y="1108" width="172" height="84" fill="${C.b1}"/>
+    <rect x="396" y="1128" width="64" height="64" rx="8" fill="${C.b3}" opacity=".9"/>
+    <g fill="${C.deep}" opacity=".13">
+      <rect x="112" y="944" width="20" height="30" rx="10"/><rect x="112" y="1004" width="20" height="30" rx="10"/>
+      <rect x="112" y="1064" width="20" height="30" rx="10"/>
+      <rect x="878" y="912" width="22" height="32"/><rect x="924" y="912" width="22" height="32"/>
+      <rect x="878" y="972" width="22" height="32"/><rect x="924" y="972" width="22" height="32"/>
+      <rect x="878" y="1032" width="22" height="32"/></g>
+  </g>`);
+
+/* the winding road, its shadow, and the tiny people on it */
+$('l-road').innerHTML = S(1920, `
+  <path d="M540 1180 C 520 1330, 600 1420, 566 1560 C 536 1690, 300 1760, 190 1920
+           L 880 1920 C 800 1770, 640 1700, 662 1566 C 686 1424, 596 1332, 620 1180 Z"
+        fill="${C.road}"/>
+  <path d="M540 1180 C 520 1330, 600 1420, 566 1560 C 536 1690, 300 1760, 190 1920"
+        fill="none" stroke="${C.roadEdge}" stroke-width="5"/>
+  <path d="M620 1180 C 596 1332, 686 1424, 662 1566 C 640 1700, 800 1770, 880 1920"
+        fill="none" stroke="${C.roadEdge}" stroke-width="5"/>
+  <g stroke="${C.roadEdge}" stroke-width="6" stroke-dasharray="26 34" opacity=".65">
+    <path d="M580 1196 C 558 1336, 640 1424, 614 1562 C 588 1698, 470 1764, 420 1920" fill="none"/>
+  </g>
+  <g id="walkers" fill="${C.deep}">
+    <g><circle cx="0" cy="-34" r="11"/><rect x="-6" y="-21" width="13" height="31" rx="6"/></g>
+    <g><circle cx="0" cy="-34" r="11"/><rect x="-6" y="-21" width="13" height="31" rx="6"/></g>
+    <g><circle cx="0" cy="-34" r="11"/><rect x="-6" y="-21" width="13" height="31" rx="6"/></g>
+  </g>`);
+
+/* floating elements: quiet geometry adrift, plus one paper plane */
+$('l-float').innerHTML = S(1920, `
+  <g id="fl1"><rect x="150" y="520" width="176" height="34" rx="17" fill="${C.b1}" opacity=".85"/></g>
+  <g id="fl2"><circle cx="880" cy="470" r="52" fill="none" stroke="${C.arch}" stroke-width="9" opacity=".8"/></g>
+  <g id="fl3"><rect x="852" y="648" width="104" height="104" rx="18" fill="${C.deep2}" opacity=".5"
+        transform="rotate(14 904 700)"/></g>
+  <g id="fl4"><circle cx="212" cy="806" r="26" fill="${C.arch}" opacity=".75"/></g>
+  <g id="fl5"><path d="M0 0 L96 34 L34 46 L26 84 Z" fill="${C.road}" opacity=".95"
+        transform="translate(150,690) scale(1.5) rotate(-14)"/>
+     <path d="M0 0 L34 46 L26 84 Z" fill="${C.roadEdge}" opacity=".9"
+        transform="translate(150,690) scale(1.5) rotate(-14)"/></g>`);
+
+/* oversized foreground plants - the scale trick that sells the whole thing */
+$('l-plants').innerHTML = S(1920, `
+  <g fill="${C.plant}">
+    <path d="M-40 1920 C -26 1740, 96 1636, 268 1596 C 190 1672, 142 1782, 142 1920 Z"/>
+    <path d="M64 1920 C 92 1786, 214 1690, 372 1656 C 282 1732, 232 1826, 228 1920 Z" opacity=".82"/>
+  </g>
+  <g fill="${C.plant2}">
+    <path d="M1120 1920 C 1104 1724, 962 1618, 786 1578 C 872 1656, 930 1776, 930 1920 Z"/>
+    <path d="M1014 1920 C 992 1776, 862 1676, 700 1642 C 796 1720, 844 1830, 848 1920 Z" opacity=".8"/>
+  </g>
+  <g stroke="${C.plant}" stroke-width="7" fill="none" opacity=".85">
+    <path d="M268 1596 C 226 1698, 196 1806, 190 1920"/>
+    <path d="M786 1578 C 838 1682, 872 1802, 876 1920"/>
+  </g>`);
+
+/* --------------------------------------------------------------- type */
+const layer = $('layer');
+const B = [];
+function mk(html, x, y, w) {
+  const d = document.createElement('div');
+  d.className = 'beat'; d.style.width = w + 'px'; d.innerHTML = html;
+  d.__x = x; d.__y = y; layer.appendChild(d); return d;
+}
+const beat = (el, t0, t1, from) => B.push({ el, t0, t1, from });
+
+beat(mk(`<div class="hero">وين بدك<br><em>توصل؟</em></div>`, 90, 1300, 900), 1.55, 6.30, 'slam');
+
+beat(mk(`<div class="stats">
+  <div class="stat"><div class="n">35</div><div class="l">دولة</div></div>
+  <div class="stat"><div class="n">600+</div><div class="l">جامعة</div></div>
+  <div class="stat"><div class="n">50,000+</div><div class="l">برنامج</div></div>
+</div>`, 90, 1352, 900), 6.85, 11.70, 'rise');
+
+beat(mk(`<div class="kick">طريق واحد<br><em>بيوصلك لكلهم.</em></div>`, 90, 1318, 900), 12.25, 16.90, 'slam');
+
+beat(mk(`<div class="line">ملف واحد بتبنيه مرة · ترشيح حسب علاماتك<br>
+  <b>وتقدّم لتلات برامج من نفس الشاشة</b></div>`, 110, 1372, 860), 17.45, 22.10, 'rise');
+
+beat(mk(`<div class="cta">قارن قبل ما تقرر.<span>nara-abroad.co.uk</span></div>`, 90, 1292, 900),
+     22.60, 27.0, 'slam');
+
+/* --------------------------------------------------------------- render */
+const L = {
+  sky:$('l-sky'), sun:$('l-sun'), far:$('l-far'), arch:$('l-arch'),
+  city:$('l-city'), road:$('l-road'), float:$('l-float'), plants:$('l-plants'),
+};
+const walkers = [...$('walkers').children];
+const floats = ['fl1','fl2','fl3','fl4','fl5'].map(id => $(id));
+
+window.render = function (t) {
+  $('bar').style.width = (t / DUR * W) + 'px';
+
+  /* a slow dolly in - every layer moves, nothing is ever still */
+  const k = t / DUR;                                   // 0 -> 1 across the reel
+  const dolly = (depth) => {
+    const sc = 1 + k * 0.085 * depth;
+    const dy = -k * 46 * depth;
+    return `scale(${sc}) translateY(${dy}px)`;
+  };
+  L.sky.style.transform    = dolly(0.20);
+  L.far.style.transform    = dolly(0.45);
+  L.city.style.transform   = dolly(0.70);
+  L.arch.style.transform   = dolly(0.80);
+  L.road.style.transform   = dolly(1.15);
+  L.plants.style.transform = dolly(1.95);
+
+  /* the sun breathes and lifts a little */
+  L.sun.style.transform = `scale(${1 + k * 0.075}) translateY(${-k * 34 + Math.sin(t * 0.42) * 5}px)`;
+
+  /* floating geometry drifts on its own clock */
+  floats.forEach((g, i) => {
+    const a = t * (0.34 + i * 0.09) + i * 1.7;
+    g.setAttribute('transform',
+      `translate(${Math.sin(a) * (16 + i * 5)} ${Math.cos(a * 0.82) * (13 + i * 4)}) rotate(${Math.sin(a * .6) * 2.4} 540 800)`);
+  });
+
+  /* the walkers actually walk up the road */
+  // control points down the middle of the road, bottom -> arch
+  const RD = [[440,1880],[520,1740],[604,1590],[600,1440],[572,1310],[578,1220]];
+  const onRoad = p => {
+    const f = cl(p) * (RD.length - 1), i0 = Math.min(RD.length - 2, Math.floor(f)), u = f - i0;
+    return [RD[i0][0] + (RD[i0+1][0] - RD[i0][0]) * u,
+            RD[i0][1] + (RD[i0+1][1] - RD[i0][1]) * u];
+  };
+  walkers.forEach((g, i) => {
+    const p = (t * 0.052 + i * 0.34) % 1;
+    const [x, y] = onRoad(p);
+    const sc = 1.5 - p * 0.85;                        // shrink as they near the arch
+    g.setAttribute('transform', `translate(${x} ${y}) scale(${sc})`);
+    g.setAttribute('opacity', (0.9 * (1 - p * 0.55)).toFixed(3));
+  });
+
+  /* type */
+  B.forEach(b => {
+    const el = b.el, IN = 0.5, OUT = 0.34;
+    if (t < b.t0 - 0.02 || t > b.t1 + OUT) { el.style.opacity = 0; return; }
+    const p = cl((t - b.t0) / IN), q = cl((t - b.t1) / OUT);
+    const e = b.from === 'slam' ? backOut(p) : outCubic(p);
+    const dy = b.from === 'slam' ? (1 - e) * -26 : (1 - e) * 44;
+    const sc = b.from === 'slam' ? 1.22 - 0.22 * e : 1;
+    el.style.opacity = p * (1 - q);
+    el.style.transform = `translate(${el.__x}px, ${el.__y + dy - q * 30}px) scale(${sc})`;
+  });
+};
+render(0);
+</script></body></html>
