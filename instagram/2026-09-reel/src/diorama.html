@@ -1,0 +1,386 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-400.ttf);font-weight:400}
+@font-face{font-family:Cairo;src:url(fonts/cairo-700.ttf);font-weight:700}
+@font-face{font-family:Cairo;src:url(fonts/cairo-900.ttf);font-weight:900}
+@font-face{font-family:Tajawal;src:url(fonts/tajawal-700.ttf);font-weight:700}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden}
+body{font-family:Cairo,sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;
+  background:
+    radial-gradient(880px 700px at 22% 12%, #FCF7EC 0%, transparent 62%),
+    radial-gradient(820px 820px at 84% 94%, #EFE4CE 0%, transparent 58%),
+    linear-gradient(164deg,#F8F2E4 0%,#EDE2CD 100%)}
+#fibre{position:absolute;inset:0;opacity:.6;mix-blend-mode:multiply;
+  background-image:
+    repeating-linear-gradient(96deg, rgba(150,128,96,.05) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(5deg, rgba(150,128,96,.04) 0 1px, transparent 1px 5px),
+    radial-gradient(circle at 1px 1px, rgba(118,98,66,.10) 1px, transparent 0);
+  background-size:auto,auto,22px 22px}
+
+/* ---- the pop-up stage ---- */
+#book{position:absolute;left:0;top:420px;width:1080px;height:940px;
+  perspective:1500px;perspective-origin:50% 100%}
+.city{position:absolute;inset:0;transform-style:preserve-3d;transform:scale(1.42);transform-origin:50% 100%}
+.plane{position:absolute;left:0;bottom:0;width:1080px;transform-origin:50% 100%;
+  will-change:transform,opacity}
+.plane svg{display:block;filter:drop-shadow(0 16px 18px rgba(84,62,32,.42))}
+/* the crease the pop-up folds out of */
+#crease{position:absolute;left:90px;right:90px;top:1358px;height:3px;
+  background:linear-gradient(90deg,transparent,rgba(120,98,62,.34),transparent)}
+#groundshade{position:absolute;left:80px;right:80px;top:1340px;height:140px;
+  background:radial-gradient(60% 100% at 50% 0%, rgba(110,88,54,.20), transparent 70%)}
+
+/* ---- ticket ---- */
+#ticket{position:absolute;left:58px;top:1180px;width:272px;height:600px;
+  transform-origin:50% 100%;will-change:transform,opacity;z-index:20}
+#ticket .card{position:absolute;inset:0;background:linear-gradient(160deg,#FBF4E2,#EFE2C6);
+  box-shadow:0 18px 32px rgba(92,70,38,.34), inset 0 0 0 1px rgba(120,98,60,.22);
+  padding:26px 22px;display:flex;flex-direction:column;justify-content:space-between;
+  direction:ltr;text-align:left;color:#3A3226}
+#ticket .brand{font-size:19px;font-weight:900;letter-spacing:.24em}
+#ticket .rule{height:1px;background:rgba(120,98,60,.35);margin:12px 0}
+#ticket .lbl{font-size:12px;letter-spacing:.18em;color:#8A7A5C;font-weight:700}
+#ticket .val{font-size:27px;font-weight:900;letter-spacing:.02em;margin-top:3px}
+#ticket .perf{position:absolute;left:0;right:0;top:66%;height:2px;
+  background:repeating-linear-gradient(90deg, rgba(120,98,60,.45) 0 7px, transparent 7px 15px)}
+#ticket .barcode{height:52px;background:repeating-linear-gradient(90deg,#3A3226 0 3px,transparent 3px 8px);
+  opacity:.72}
+#ticket .stampcirc{position:absolute;right:16px;top:150px;width:112px;height:112px;border-radius:50%;
+  border:4px solid rgba(160,60,48,.5);color:rgba(160,60,48,.62);transform:rotate(-16deg);
+  display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;
+  letter-spacing:.1em;text-align:center;line-height:1.2}
+
+/* ---- margin sketches ---- */
+.sk{position:absolute;opacity:.62;will-change:opacity,transform}
+.sk svg{display:block}
+.note{position:absolute;font-size:22px;color:#8A7A5C;font-weight:700;opacity:.62;
+  font-family:Cairo,sans-serif;direction:ltr;letter-spacing:.04em}
+
+/* ---- type ---- */
+.beat{position:absolute;left:0;top:0;will-change:transform,opacity;text-align:center}
+.paperlbl{position:relative;background:linear-gradient(160deg,#FEFBF2,#F5ECD9);
+  box-shadow:0 12px 22px rgba(92,70,38,.26), inset 0 0 0 1px rgba(120,98,60,.18);
+  padding:22px 30px}
+.t-hero{font-family:Tajawal,Cairo,sans-serif;font-weight:700;font-size:86px;line-height:1.28;color:#22242A}
+.t-hero em{font-style:normal;color:#1F5B72}
+.t-city{font-family:Tajawal,Cairo,sans-serif;font-weight:700;font-size:64px;color:#22242A;line-height:1.2}
+.t-city span{display:block;font-family:Cairo;font-size:31px;font-weight:700;color:#7A6C52;
+  margin-top:8px;letter-spacing:.02em}
+.t-line{font-size:42px;font-weight:700;line-height:1.42;color:#2C2C33}
+.t-line b{color:#1F5B72;font-weight:900}
+.t-cta{font-family:Tajawal,Cairo,sans-serif;font-weight:700;font-size:100px;color:#1F5B72;line-height:1.28}
+.t-cta span{display:block;font-family:Cairo;font-size:38px;font-weight:700;color:#3A3226;
+  margin-top:14px;direction:ltr}
+
+#mark{position:absolute;top:70px;right:70px;display:flex;align-items:center;gap:15px;
+  color:#26262A;font-weight:700;font-size:29px;letter-spacing:.28em;z-index:40}
+#mark i{width:17px;height:17px;border-radius:50%;background:#C08A2E;display:block}
+#bar{position:absolute;top:0;right:0;height:8px;background:#C08A2E;z-index:41}
+#site{position:absolute;bottom:70px;right:0;left:0;text-align:center;color:#7A7060;
+  font-size:32px;font-weight:700;direction:ltr;z-index:40}
+</style></head><body>
+<div id="stage">
+  <div id="fibre"></div>
+  <div id="mark"><i></i>NARA ABROAD</div>
+  <div id="bar"></div>
+  <div id="site">nara-abroad.co.uk</div>
+
+  <div id="sketches"></div>
+  <div id="groundshade"></div>
+  <div id="book"></div>
+  <div id="crease"></div>
+
+  <div id="ticket">
+    <div class="card">
+      <div>
+        <div class="brand">NARA ABROAD</div>
+        <div class="rule"></div>
+        <div class="lbl">STUDENT PASS</div>
+        <div class="val" id="tk-city">LONDON</div>
+      </div>
+      <div class="stampcirc">ONE<br>PROFILE</div>
+      <div>
+        <div class="lbl">PROGRAMMES</div>
+        <div class="val">50,000+</div>
+        <div class="rule"></div>
+        <div class="barcode"></div>
+      </div>
+      <div class="perf"></div>
+    </div>
+  </div>
+
+  <div id="layer"></div>
+</div>
+
+<script>
+const DUR = 26, W = 1080;
+const $ = id => document.getElementById(id);
+const cl = v => Math.max(0, Math.min(1, v));
+const outCubic = p => 1 - Math.pow(1 - p, 3);
+const backOut = p => { const c = 1.7, q = p - 1; return 1 + (c + 1) * q * q * q + c * q * q; };
+
+const INK = '#3A3226', SEP = '#8A7A5C';
+const PAPER = ['#DFCDA6', '#CDB88A', '#BCA173'];   // back, mid, front planes
+
+/* ------------------------------------------------------------------ cities
+   Each city is three cut-paper planes. Back = skyline, mid = landmarks,
+   front = street. They fold up out of the crease like a pop-up book.      */
+function svg(inner, h) {
+  return `<svg width="1080" height="${h}" viewBox="0 0 1080 ${h}">${inner}</svg>`;
+}
+const win = (x, y, w, h, c) =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" opacity=".5"/>`;
+
+const CITIES = {
+  london: {
+    name: 'لندن', sub: 'المملكة المتحدة', tk: 'LONDON',
+    back: svg(`<g fill="${PAPER[0]}">
+      <rect x="40" y="150" width="150" height="240"/><rect x="210" y="200" width="120" height="190"/>
+      <rect x="350" y="120" width="110" height="270"/><rect x="480" y="185" width="160" height="205"/>
+      <rect x="660" y="140" width="120" height="250"/><rect x="800" y="195" width="180" height="195"/>
+      </g>
+      <g fill="${INK}" opacity=".16">${win(60,175,18,26)}${win(96,175,18,26)}${win(60,225,18,26)}
+      ${win(370,150,16,24)}${win(404,150,16,24)}${win(700,170,16,24)}${win(830,225,18,26)}</g>
+      <circle cx="905" cy="215" r="88" fill="none" stroke="${PAPER[1]}" stroke-width="13"/>
+      <circle cx="905" cy="215" r="88" fill="none" stroke="${INK}" stroke-width="2" opacity=".22"/>`, 390),
+    mid: svg(`<g fill="${PAPER[1]}">
+      <rect x="470" y="40" width="96" height="300"/>
+      <path d="M470 40 L518 -14 L566 40 Z"/>
+      <rect x="150" y="180" width="46" height="160"/><rect x="300" y="180" width="46" height="160"/>
+      <path d="M150 200 h196 v22 h-196 z"/>
+      <rect x="700" y="150" width="230" height="190"/>
+      </g>
+      <circle cx="518" cy="92" r="30" fill="#FBF4E2" stroke="${INK}" stroke-width="3" opacity=".9"/>
+      <path d="M518 92 L518 74 M518 92 L531 99" stroke="${INK}" stroke-width="3" fill="none"/>
+      <path d="M196 200 C 230 150, 266 150, 300 200" fill="none" stroke="${INK}" stroke-width="4" opacity=".45"/>
+      <g fill="${INK}" opacity=".14">${win(725,175,26,34)}${win(775,175,26,34)}${win(825,175,26,34)}
+      ${win(725,235,26,34)}${win(775,235,26,34)}${win(825,235,26,34)}</g>`, 340),
+    front: svg(`<g fill="${PAPER[2]}">
+      <rect x="0" y="120" width="1080" height="80"/>
+      <rect x="620" y="24" width="250" height="106" rx="10"/>
+      <rect x="180" y="52" width="66" height="78" rx="6"/>
+      </g>
+      <g fill="${INK}" opacity=".2">${win(640,40,40,34)}${win(692,40,40,34)}${win(744,40,40,34)}${win(796,40,40,34)}
+      ${win(640,88,40,30)}${win(692,88,40,30)}${win(744,88,40,30)}</g>
+      <circle cx="672" cy="132" r="17" fill="${INK}" opacity=".5"/><circle cx="820" cy="132" r="17" fill="${INK}" opacity=".5"/>
+      <rect x="196" y="66" width="34" height="42" fill="#FBF4E2" opacity=".8"/>
+      <g stroke="${INK}" stroke-width="4" opacity=".4" fill="none">
+        <path d="M420 130 v-60"/><path d="M404 70 h32"/>
+        <path d="M980 130 v-70"/><path d="M964 60 h32"/></g>
+      <g fill="${INK}" opacity=".3">
+        <ellipse cx="320" cy="66" rx="34" ry="40"/><rect x="316" y="96" width="8" height="34"/>
+        <ellipse cx="1010" cy="72" rx="30" ry="36"/><rect x="1006" y="98" width="8" height="32"/></g>`, 200),
+  },
+  berlin: {
+    name: 'برلين', sub: 'ألمانيا', tk: 'BERLIN',
+    back: svg(`<g fill="${PAPER[0]}">
+      <rect x="60" y="190" width="170" height="200"/><rect x="250" y="150" width="140" height="240"/>
+      <rect x="410" y="205" width="150" height="185"/><rect x="740" y="175" width="160" height="215"/>
+      <rect x="920" y="215" width="130" height="175"/></g>
+      <g fill="${INK}" opacity=".16">${win(80,215,20,28)}${win(120,215,20,28)}${win(270,180,20,28)}
+      ${win(430,235,20,28)}${win(760,205,20,28)}${win(940,245,20,28)}</g>
+      <g fill="${PAPER[1]}"><rect x="630" y="60" width="20" height="330"/>
+      <circle cx="640" cy="112" r="46"/><path d="M626 60 L640 6 L654 60 Z"/></g>
+      <circle cx="640" cy="112" r="46" fill="none" stroke="${INK}" stroke-width="2" opacity=".22"/>`, 390),
+    mid: svg(`<g fill="${PAPER[1]}">
+      <rect x="330" y="120" width="420" height="34"/>
+      <rect x="352" y="154" width="26" height="186"/><rect x="424" y="154" width="26" height="186"/>
+      <rect x="496" y="154" width="26" height="186"/><rect x="568" y="154" width="26" height="186"/>
+      <rect x="640" y="154" width="26" height="186"/><rect x="712" y="154" width="26" height="186"/>
+      <rect x="470" y="72" width="140" height="48" rx="6"/>
+      <rect x="60" y="190" width="200" height="150"/><rect x="820" y="200" width="200" height="140"/></g>
+      <g stroke="${INK}" stroke-width="3" opacity=".3" fill="none">
+        <path d="M486 72 q54 -34 108 0"/><path d="M512 60 v12 M556 60 v12"/></g>
+      <g fill="${INK}" opacity=".14">${win(84,215,26,32)}${win(134,215,26,32)}${win(184,215,26,32)}
+      ${win(844,225,26,32)}${win(894,225,26,32)}${win(944,225,26,32)}</g>`, 340),
+    front: svg(`<g fill="${PAPER[2]}">
+      <rect x="0" y="120" width="1080" height="80"/>
+      <rect x="560" y="30" width="330" height="100" rx="12"/>
+      </g>
+      <g fill="${INK}" opacity=".2">${win(580,46,52,42)}${win(646,46,52,42)}${win(712,46,52,42)}${win(778,46,52,42)}</g>
+      <circle cx="614" cy="132" r="16" fill="${INK}" opacity=".5"/><circle cx="840" cy="132" r="16" fill="${INK}" opacity=".5"/>
+      <g stroke="${INK}" stroke-width="4" opacity=".4" fill="none">
+        <path d="M120 130 v-62"/><path d="M104 68 h32"/>
+        <circle cx="290" cy="104" r="24"/><circle cx="352" cy="104" r="24"/><path d="M290 104 h62"/></g>
+      <g fill="${INK}" opacity=".3"><ellipse cx="980" cy="66" rx="32" ry="40"/><rect x="976" y="96" width="8" height="34"/></g>`, 200),
+  },
+  amsterdam: {
+    name: 'أمستردام', sub: 'هولندا', tk: 'AMSTERDAM',
+    back: svg(`<g fill="${PAPER[0]}">
+      <rect x="60" y="200" width="150" height="190"/><rect x="230" y="180" width="130" height="210"/>
+      <rect x="380" y="215" width="140" height="175"/><rect x="700" y="190" width="150" height="200"/></g>
+      <g fill="${INK}" opacity=".16">${win(80,225,20,28)}${win(250,205,20,28)}${win(400,240,20,28)}${win(720,215,20,28)}</g>
+      <g fill="${PAPER[1]}"><rect x="900" y="210" width="26" height="180"/>
+      <circle cx="913" cy="196" r="20"/></g>
+      <g stroke="${INK}" stroke-width="6" opacity=".34" fill="none">
+        <path d="M913 196 L 830 118"/><path d="M913 196 L 996 118"/>
+        <path d="M913 196 L 838 274"/><path d="M913 196 L 988 274"/></g>`, 390),
+    mid: svg(`<g fill="${PAPER[1]}">
+      <rect x="150" y="120" width="112" height="220"/><path d="M150 120 h112 v-22 h-28 v-22 h-28 v-22 h-28 v-22 h-28 z"/>
+      <rect x="286" y="150" width="112" height="190"/><path d="M286 150 h112 v-20 h-30 v-20 h-26 v-20 h-30 z"/>
+      <rect x="422" y="106" width="112" height="234"/><path d="M422 106 L478 44 L534 106 Z"/>
+      <rect x="558" y="146" width="112" height="194"/><path d="M558 146 h112 v-22 h-28 v-22 h-28 v-22 h-28 z"/>
+      <rect x="694" y="126" width="112" height="214"/><path d="M694 126 L750 66 L806 126 Z"/></g>
+      <g fill="${INK}" opacity=".16">${win(174,160,26,36)}${win(214,160,26,36)}${win(174,224,26,36)}
+      ${win(446,146,26,36)}${win(486,146,26,36)}${win(718,166,26,36)}${win(758,166,26,36)}
+      ${win(582,186,26,36)}${win(310,190,26,36)}</g>`, 340),
+    front: svg(`<g fill="${PAPER[2]}"><rect x="0" y="120" width="1080" height="80"/></g>
+      <path d="M180 122 q160 -104 320 0" fill="none" stroke="${PAPER[2]}" stroke-width="22"/>
+      <path d="M180 122 q160 -104 320 0" fill="none" stroke="${INK}" stroke-width="2" opacity=".24"/>
+      <g stroke="${INK}" stroke-width="5" opacity=".42" fill="none">
+        <circle cx="660" cy="100" r="26"/><circle cx="726" cy="100" r="26"/><path d="M660 100 h66 M693 100 v-26 h-22"/>
+        <circle cx="820" cy="100" r="26"/><circle cx="886" cy="100" r="26"/><path d="M820 100 h66 M853 100 v-26 h-22"/></g>
+      <g fill="${INK}" opacity=".3"><ellipse cx="80" cy="68" rx="30" ry="38"/><rect x="76" y="96" width="8" height="34"/>
+      <ellipse cx="1010" cy="72" rx="28" ry="36"/><rect x="1006" y="98" width="8" height="32"/></g>`, 200),
+  },
+};
+
+/* build the three planes for each city, hidden by default */
+const book = $('book');
+const RIG = {};
+for (const key in CITIES) {
+  const c = CITIES[key], el = document.createElement('div');
+  el.className = 'city';
+  el.innerHTML =
+    `<div class="plane" style="bottom:150px">${c.back}</div>` +
+    `<div class="plane" style="bottom:96px">${c.mid}</div>` +
+    `<div class="plane" style="bottom:0">${c.front}</div>`;
+  book.appendChild(el);
+  RIG[key] = { el, planes: [...el.querySelectorAll('.plane')] };
+}
+
+/* ---- margin sketches: quick sepia line art in the paper margins ---- */
+const SK = [
+  { x: 70,  y: 210, w: 260, d: `<path d="M20 120 L20 40 L60 10 L100 40 L100 120 M140 120 L140 40 L180 10 L220 40 L220 120
+      M20 78 Q120 30 220 78 M20 120 h200" fill="none" stroke="${SEP}" stroke-width="3"/>` , h: 150 },
+  { x: 720, y: 190, w: 250, d: `<circle cx="120" cy="80" r="66" fill="none" stroke="${SEP}" stroke-width="3"/>
+      <circle cx="120" cy="80" r="8" fill="none" stroke="${SEP}" stroke-width="3"/>
+      <g stroke="${SEP}" stroke-width="2">
+      <path d="M120 14 v132 M54 80 h132 M74 34 l92 92 M166 34 l-92 92"/></g>
+      <path d="M40 150 h160" stroke="${SEP}" stroke-width="3" fill="none"/>`, h: 170 },
+  { x: 790, y: 1420, w: 230, d: `<g fill="none" stroke="${SEP}" stroke-width="3">
+      <path d="M10 130 h210 M30 130 V60 l40 -28 40 28 v70 M120 130 V70 l36 -26 36 26 v60"/>
+      <path d="M46 86 h16 M78 86 h16 M136 92 h14 M166 92 h14"/></g>`, h: 150 },
+  { x: 90, y: 1450, w: 220, d: `<g fill="none" stroke="${SEP}" stroke-width="3">
+      <path d="M12 120 h196"/><path d="M40 120 V54 q42 -40 84 0 V120"/><path d="M82 54 V22"/>
+      <circle cx="82" cy="14" r="9"/><path d="M140 120 V70 h56 v50"/></g>`, h: 140 },
+];
+const sketches = $('sketches');
+const SKEL = SK.map(s => {
+  const d = document.createElement('div');
+  d.className = 'sk';
+  d.style.cssText = `left:${s.x}px;top:${s.y}px;width:${s.w}px`;
+  d.innerHTML = `<svg width="${s.w}" height="${s.h}" viewBox="0 0 240 ${s.h}">${s.d}</svg>`;
+  sketches.appendChild(d);
+  return d;
+});
+[['LAT 51.5°N', 120, 380], ['ONE PROFILE · 3 OFFERS', 640, 1560], ['35 COUNTRIES', 700, 400]]
+  .forEach(([txt, x, y]) => {
+    const n = document.createElement('div');
+    n.className = 'note'; n.style.cssText = `left:${x}px;top:${y}px`;
+    n.textContent = txt; sketches.appendChild(n);
+  });
+
+/* ---- text beats ---- */
+const layer = $('layer');
+function mkBeat(html, x, y, w) {
+  const d = document.createElement('div');
+  d.className = 'beat';
+  d.style.width = w + 'px';
+  d.innerHTML = html;
+  layer.appendChild(d);
+  d.__x = x; d.__y = y;
+  return d;
+}
+const B = [];
+const beat = (el, t0, t1, from) => B.push({ el, t0, t1, from });
+
+const hero = mkBeat(`<div class="t-hero">وين بدك<br><em>تدرس؟</em></div>`, 90, 165, 900);
+beat(hero, 1.55, 5.90, 'slam');
+
+const CITYBEATS = [
+  ['london',   -0.55,  6.40],
+  ['berlin',    6.90, 12.40],
+  ['amsterdam',12.90, 27.60],
+];
+const cityLabels = {};
+for (const [k, t0, t1] of CITYBEATS) {
+  const c = CITIES[k];
+  const el = mkBeat(`<div class="paperlbl" style="display:inline-block"><div class="t-city">${c.name}<span>${c.sub}</span></div></div>`,
+                    400, 1420, 620);
+  cityLabels[k] = el;
+  beat(el, Math.max(1.9, t0 + 1.25), Math.min(t1 - 0.15, t0 + 5.35), 'rise');
+}
+
+const closing = mkBeat(
+  `<div class="paperlbl"><div class="t-line">
+   <b>٣٥ دولة</b> — وكل وحدة إلها تكلفة وقبول وفرص شغل مختلفة.</div></div>`, 140, 1400, 800);
+beat(closing, 18.85, 22.60, 'rise');
+
+const cta = mkBeat(`<div class="paperlbl"><div class="t-cta">قارن قبل ما تقرر.<span>nara-abroad.co.uk</span></div></div>`,
+                   140, 1360, 800);
+beat(cta, 22.95, 26.0, 'slam');
+
+/* ------------------------------------------------------------------ render */
+const tk = $('ticket'), tkCity = $('tk-city');
+window.render = function (t) {
+  $('bar').style.width = (t / DUR * W) + 'px';
+
+  /* the ticket is on screen from the first frame and never stops breathing */
+  const tp = outCubic(cl(t / 0.9));
+  const tkOut = cl((t - 18.7) / 0.7);
+  tk.style.opacity = Math.min(1, 0.35 + tp) * (1 - tkOut);
+  tk.style.transform =
+    `translate(${(1 - tp) * -70}px, ${(1 - tp) * 40}px) rotate(${-6 + (1 - tp) * -10 + Math.sin(t * 0.8) * 0.7}deg) translateX(${-tkOut * 260}px)`;
+
+  /* which city is standing, and how far up it has folded */
+  let active = null, rise = 0;
+  for (const [k, t0, t1] of CITYBEATS) {
+    const up = cl((t - t0) / 1.15);                 // fold up
+    const down = cl((t - (t1 - 0.75)) / 0.75);      // fold back down
+    const amt = up * (1 - down);
+    const R = RIG[k];
+    R.el.style.opacity = amt > 0 ? 1 : 0;
+    if (amt > 0) {
+      active = k;
+      R.planes.forEach((pl, i) => {
+        const stagger = cl((amt - i * 0.10) / (1 - 0.20));
+        const e = backOut(cl(stagger));
+        const ang = -86 * (1 - e);                  // folded flat -> upright
+        const sway = Math.sin(t * 0.7 + i) * (1.1 + i * 0.5);
+        pl.style.transform = `rotateX(${ang}deg) translateX(${sway}px)`;
+        const back = cl((t - 18.6) / 0.9) * 0.55;
+        pl.style.opacity = Math.min(1, stagger * 1.6) * (1 - back);
+      });
+      if (amt > rise) rise = amt;
+    }
+  }
+  if (active) tkCity.textContent = CITIES[active].tk;
+
+  /* sketches breathe in once the first pop-up is up */
+  SKEL.forEach((d, i) => {
+    const p = cl((t - (2.2 + i * 0.28)) / 0.9);
+    d.style.opacity = 0.62 * outCubic(p);
+    d.style.transform = `translateY(${(1 - outCubic(p)) * 16}px) rotate(${Math.sin(t * 0.5 + i) * 0.6}deg)`;
+  });
+  sketches.querySelectorAll('.note').forEach((n, i) => {
+    n.style.opacity = 0.62 * outCubic(cl((t - (3.0 + i * 0.4)) / 0.8));
+  });
+
+  /* type */
+  B.forEach(b => {
+    const el = b.el, IN = 0.46, OUT = 0.32;
+    if (t < b.t0 - 0.02 || t > b.t1 + OUT) { el.style.opacity = 0; return; }
+    const p = cl((t - b.t0) / IN), q = cl((t - b.t1) / OUT);
+    const e = b.from === 'slam' ? backOut(p) : outCubic(p);
+    const dy = b.from === 'slam' ? (1 - e) * -34 : (1 - e) * 46;
+    const sc = b.from === 'slam' ? 1.32 - 0.32 * e : 1;
+    el.style.opacity = p * (1 - q);
+    el.style.transform =
+      `translate(${el.__x}px, ${el.__y + dy - q * 34}px) scale(${sc}) rotate(${Math.sin(t * 0.9) * 0.3}deg)`;
+  });
+};
+render(0);
+</script></body></html>
