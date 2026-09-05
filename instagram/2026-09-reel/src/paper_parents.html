@@ -1,0 +1,247 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-400.ttf);font-weight:400}
+@font-face{font-family:Cairo;src:url(fonts/cairo-700.ttf);font-weight:700}
+@font-face{font-family:Cairo;src:url(fonts/cairo-900.ttf);font-weight:900}
+@font-face{font-family:Tajawal;src:url(fonts/tajawal-700.ttf);font-weight:700}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden}
+body{font-family:Cairo,sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;
+  background:
+    radial-gradient(900px 700px at 20% 10%, #FBF5E8 0%, transparent 60%),
+    radial-gradient(800px 800px at 85% 92%, #F0E6D2 0%, transparent 58%),
+    linear-gradient(165deg,#F7F0E1 0%,#EFE5D2 100%)}
+/* paper fibre + speckle on the ground */
+#fibre{position:absolute;inset:0;opacity:.55;mix-blend-mode:multiply;
+  background-image:
+    repeating-linear-gradient(97deg, rgba(150,130,100,.045) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(6deg, rgba(150,130,100,.035) 0 1px, transparent 1px 5px),
+    radial-gradient(circle at 1px 1px, rgba(120,100,70,.10) 1px, transparent 0);
+  background-size:auto,auto,22px 22px}
+.scrap{position:absolute;left:0;top:0;will-change:transform,opacity;transform-origin:50% 50%}
+.sheetbg{position:absolute;inset:0;filter:url(#torn)}
+.face{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:24px 34px}
+.face>*{max-width:100%;width:100%;overflow-wrap:break-word}
+.tape{position:absolute;height:44px;width:150px;background:rgba(226,213,182,.62);
+  border-left:1px solid rgba(255,255,255,.5);border-right:1px solid rgba(255,255,255,.5);
+  box-shadow:0 2px 5px rgba(90,70,40,.13)}
+#mark{position:absolute;top:70px;right:70px;display:flex;align-items:center;gap:15px;
+  color:#26262A;font-weight:700;font-size:29px;letter-spacing:.28em;z-index:40}
+#mark i{width:17px;height:17px;border-radius:50%;background:#C08A2E;display:block}
+#bar{position:absolute;top:0;right:0;height:8px;background:#C08A2E;z-index:41}
+#site{position:absolute;bottom:74px;right:0;left:0;text-align:center;color:#7A7060;
+  font-size:33px;font-weight:700;direction:ltr;z-index:40}
+.t-big{font-family:Tajawal,Cairo,sans-serif;font-weight:700;font-size:82px;line-height:1.28;color:#23232A}
+.t-big em{font-style:normal;color:#B3453C}
+.t-mid{font-size:41px;font-weight:700;line-height:1.42;color:#33333A}
+.t-row{font-size:39px;font-weight:700;line-height:1.4;color:#2C2C33}
+.t-row b{color:#0A1A33;font-weight:900}
+.t-title{font-family:Tajawal,Cairo,sans-serif;font-weight:700;font-size:92px;line-height:1.26;color:#0A1A33}
+.t-title em{font-style:normal;color:#C08A2E}
+.t-cta{font-family:Tajawal,Cairo,sans-serif;font-weight:700;font-size:104px;color:#0A1A33;line-height:1.3}
+.t-sub{font-size:40px;font-weight:700;color:#6E6456;margin-top:14px;direction:ltr}
+.stamp{position:absolute;border:9px solid #2F6B4F;color:#2F6B4F;border-radius:14px;
+  font-family:Tajawal,sans-serif;font-weight:700;font-size:76px;letter-spacing:.06em;
+  padding:14px 40px;opacity:.86}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="torn" x="-12%" y="-12%" width="124%" height="124%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.014 0.055" numOctaves="4" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="17" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feDropShadow dx="0" dy="10" stdDeviation="11" flood-color="#5A4527" flood-opacity="0.42"/>
+  </filter>
+  <filter id="torn2" x="-12%" y="-12%" width="124%" height="124%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.02 0.07" numOctaves="4" seed="27" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="13" xChannelSelector="R" yChannelSelector="G"/>
+    <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#5A4527" flood-opacity="0.38"/>
+  </filter>
+</svg>
+
+<div id="stage">
+  <div id="fibre"></div>
+  <div id="mark"><i></i>NARA ABROAD</div>
+  <div id="bar"></div>
+  <div id="site">nara-abroad.co.uk</div>
+  <div id="layer"></div>
+</div>
+
+<script>
+const DUR = 36, W = 1080, H = 1920;
+const layer = document.getElementById('layer');
+
+/* deterministic pseudo-random so every render is identical */
+let _s = 1337;
+const rnd = () => (_s = (_s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+
+const TONES = ['#FFFDF7','#EADCBE','#FBF6EA','#DCC9A4','#F2E7D2','#E3D3B2','#FDFAF1','#D6C3A0'];
+
+function mkScrap({w, h, tone, rot, html, cls, filt}) {
+  const d = document.createElement('div');
+  d.className = 'scrap';
+  d.style.width = w + 'px'; d.style.height = h + 'px';
+  const bg = document.createElement('div');
+  bg.className = 'sheetbg';
+  bg.style.background = tone;
+  if (filt) bg.style.filter = `url(#${filt})`;
+  d.appendChild(bg);
+  if (html) {
+    const f = document.createElement('div');
+    f.className = 'face' + (cls ? ' ' + cls : '');
+    f.innerHTML = html;
+    d.appendChild(f);
+  }
+  d.dataset.rot = rot;
+  layer.appendChild(d);
+  return d;
+}
+
+/* ---------- decorative chaos: blank scraps that own frame 0 ---------- */
+const CHAOS = [];
+const COLS = 5, ROWS_N = 5;
+for (let i = 0; i < COLS * ROWS_N; i++) {
+  const col = i % COLS, row = (i / COLS) | 0;
+  const w = 210 + rnd() * 230, h = 140 + rnd() * 150;
+  const el = mkScrap({ w, h, tone: TONES[i % TONES.length],
+                       rot: (rnd() - .5) * 50, filt: 'torn2' });
+  // a few carry ruled lines so they read as documents
+  if (i % 3 === 0) {
+    const bg = el.firstChild;
+    bg.style.backgroundImage =
+      'repeating-linear-gradient(180deg, transparent 0 17px, rgba(60,50,35,.13) 17px 18px)';
+  }
+  CHAOS.push({ el, w, h,
+    x: col * (W / COLS) - 90 + (rnd() - .5) * 150,
+    y: 150 + row * ((H - 380) / ROWS_N) + (rnd() - .5) * 130,
+    rot: (rnd() - .5) * 50,
+    vx: (rnd() - .5) * 26, vy: (rnd() - .5) * 22, vr: (rnd() - .5) * 16,
+    ph: rnd() * 6.3, flee: rnd() * 0.9 });
+}
+
+/* ---------- narrative scraps ---------- */
+const SW = 900;                     // the clean sheet
+const sheet = mkScrap({ w: SW, h: 920, tone: '#FEFBF2', rot: -0.6, filt: 'torn' });
+
+const B = [];   // {el, t0, t1, x, y, rot, from}
+function beat(o) { B.push(o); return o; }
+
+const claim = mkScrap({ w: 840, h: 350, tone: '#FFFDF6', rot: -2.4, filt: 'torn',
+  html: `<div class="t-big">ابنك بدّه يسافر.<br><em>وإنت اللي بتقلق.</em></div>` });
+beat({ el: claim, t0: 1.30, t1: 11.60, x: 120, y: 680, rot: -2.4, from: 'slam' });
+
+const PROBS = [
+  ['جامعة ما بتعرف عنها إشي', 470, 1090, 3.2, '#F6EEDC'],
+  ['أرقام بتتغيّر كل ما تسأل', 130, 1250, -4.1, '#EFE4CE'],
+  ['ووسيط بيستعجلك توقّع', 520, 1420, -2.6, '#F0DCD6'],
+  ['وابنك بعيد… ومين بيتابعه؟', 90, 1590, 2.9, '#F9F3E5'],
+];
+PROBS.forEach((p, i) => {
+  const el = mkScrap({ w: 470, h: 150, tone: p[4], rot: p[3], filt: 'torn2',
+    html: `<div class="t-mid">${p[0]}</div>` });
+  beat({ el, t0: 4.60 + i * 1.55, t1: 11.60, x: p[1], y: p[2], rot: p[3], from: 'flip' });
+});
+
+const turn = mkScrap({ w: 760, h: 300, tone: '#FFFDF6', rot: 1.4, filt: 'torn',
+  html: `<div class="t-big">بس شو لو<br><em style="color:#2F6B4F">كل إشي قدامك؟</em></div>` });
+beat({ el: turn, t0: 12.90, t1: 16.40, x: 160, y: 760, rot: 1.4, from: 'slam' });
+
+/* content that lands on the clean sheet */
+const sheetTitle = document.createElement('div');
+sheetTitle.className = 'scrap';
+sheetTitle.style.cssText = 'width:700px;height:230px';
+sheetTitle.innerHTML = `<div class="face"><div class="t-title">قرار واضح.<br><em>من غير قلق.</em></div></div>`;
+layer.appendChild(sheetTitle);
+beat({ el: sheetTitle, t0: 16.80, t1: 33.60, x: 190, y: 630, rot: 0, from: 'rise' });
+
+const ROWS = [
+  'كل الأرقام قدامك — <b>رسوم ومعيشة وتأشيرة</b>',
+  'جامعات <b>معترف فيها</b>، وشروطها مكتوبة',
+  '<b>مختص قبول</b> بيراجع كل ورقة قبل ما تنبعت',
+  'وبتتابع <b>حالة الطلب</b> أول بأول',
+  'وبعد القبول: <b>تأشيرة وسكن وسفر</b>',
+];
+ROWS.forEach((r, i) => {
+  const el = document.createElement('div');
+  el.className = 'scrap';
+  el.style.cssText = 'width:700px;height:104px';
+  el.innerHTML = `<div class="face" style="justify-content:center"><div class="t-row">${r}</div></div>`;
+  layer.appendChild(el);
+  beat({ el, t0: 18.20 + i * 2.05, t1: 33.60, x: 190, y: 880 + i * 110, rot: 0, from: 'rise' });
+});
+
+const stamp = document.createElement('div');
+stamp.className = 'scrap';
+stamp.style.cssText = 'width:360px;height:150px';
+stamp.innerHTML = `<div class="face"><div class="stamp">مقبول</div></div>`;
+layer.appendChild(stamp);
+beat({ el: stamp, t0: 29.30, t1: 33.60, x: 560, y: 1430, rot: -13, from: 'stamp' });
+
+const cta = mkScrap({ w: 820, h: 340, tone: '#FEFBF2', rot: -1.2, filt: 'torn',
+  html: `<div><div class="t-cta">نارا أبرود.</div><div class="t-sub">nara-abroad.co.uk</div></div>` });
+beat({ el: cta, t0: 33.90, t1: 36.0, x: 130, y: 780, rot: -1.2, from: 'slam' });
+
+/* ---------- helpers ---------- */
+const cl = v => Math.max(0, Math.min(1, v));
+const outCubic = p => 1 - Math.pow(1 - p, 3);
+const backOut = p => { const c = 1.9; const q = p - 1; return 1 + (c + 1) * q * q * q + c * q * q; };
+
+const SWEEP = 15.10;        // chaos flies out
+const SHEET_IN = 15.60;     // clean sheet settles
+
+window.render = function (t) {
+  document.getElementById('bar').style.width = (t / DUR * W) + 'px';
+
+  /* chaos: always moving, then swept away */
+  CHAOS.forEach(c => {
+    const drift = Math.sin(t * 0.9 + c.ph) * 9;
+    let x = c.x + c.vx * t * 0.55 + drift;
+    let y = c.y + c.vy * t * 0.55 + Math.cos(t * 0.75 + c.ph) * 7;
+    let rot = c.rot + c.vr * t * 0.45 + Math.sin(t * 1.1 + c.ph) * 1.6;
+    let op = 1;
+    if (t > SWEEP - c.flee) {
+      const p = cl((t - (SWEEP - c.flee)) / 1.05);
+      const e = outCubic(p);
+      const dir = (c.x < W / 2 ? -1 : 1);
+      x += dir * 1500 * e;
+      y += (c.y < H / 2 ? -1 : 1) * 520 * e;
+      rot += dir * 150 * e;
+      op *= (1 - p);
+    }
+    c.el.style.opacity = op;
+    c.el.style.transform = `translate(${x}px,${y}px) rotate(${rot}deg)`;
+  });
+
+  /* the clean sheet */
+  const sp = cl((t - SHEET_IN) / 0.75);
+  if (sp <= 0) { sheet.style.opacity = 0; }
+  else {
+    const e = backOut(sp);
+    const gone = cl((t - 33.60) / 0.5);
+    sheet.style.opacity = sp * (1 - gone);
+    sheet.style.transform =
+      `translate(90px, ${560 + (1 - e) * 240 - gone * 60}px) ` +
+      `rotate(${-0.6 + (1 - e) * 5 + Math.sin(t * 0.8) * 0.35}deg) scale(${0.86 + 0.14 * e})`;
+  }
+
+  /* narrative beats */
+  B.forEach(b => {
+    const el = b.el, IN = b.from === 'stamp' ? 0.26 : 0.46, OUT = 0.34;
+    if (t < b.t0 - 0.02 || t > b.t1 + OUT) { el.style.opacity = 0; return; }
+    const p = cl((t - b.t0) / IN), q = cl((t - b.t1) / OUT);
+    const e = b.from === 'slam' || b.from === 'stamp' ? backOut(p) : outCubic(p);
+    let dx = 0, dy = 0, sc = 1, rot = b.rot;
+    if (b.from === 'slam')  { sc = 1.5 - 0.5 * e; dy = (1 - e) * -40; }
+    if (b.from === 'flip')  { dx = (1 - e) * (b.x < W / 2 ? -420 : 420); rot = b.rot + (1 - e) * 26; }
+    if (b.from === 'rise')  { dy = (1 - e) * 52; }
+    if (b.from === 'stamp') { sc = 2.4 - 1.4 * e; rot = b.rot - (1 - e) * 18; }
+    const idle = Math.sin(t * 1.15 + b.t0) * 0.5;          // nothing is ever static
+    const bob = Math.cos(t * 0.95 + b.t0) * 2.4;
+    el.style.opacity = p * (1 - q);
+    el.style.transform =
+      `translate(${b.x + dx}px, ${b.y + dy + bob - q * 40}px) ` +
+      `rotate(${rot + idle}deg) scale(${sc * (1 - q * 0.06)})`;
+  });
+};
+render(0);
+</script></body></html>
